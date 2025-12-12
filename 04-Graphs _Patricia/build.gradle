@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+application {
+    mainClass = 'MAINdepureba'
+}
+
+dependencies {
+    implementation files('libs/graphsDS_ESI_UCLM_v2.jar')
+}
