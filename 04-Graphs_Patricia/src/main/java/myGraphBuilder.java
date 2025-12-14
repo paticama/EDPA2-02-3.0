@@ -120,11 +120,17 @@ public class myGraphBuilder {
         switch (option) {
             case 'b':
                 List<Vertex> bfs = BFS(g, coord1, coord2);
-                Iterator<Vertex> itV = bfs.iterator();
-                while (itV.hasNext()){
-                    System.out.println(itV.next());
+                if (bfs == null || bfs.size() == 1) {
+                    System.out.println("Path not found, virtual segments will be created");
+                    createVirtualSegments(g, coord1, coord2);
+                    //we call again the BFS so we don't have to call the "b" option again
+                    bfs = BFS(g, coord1, coord2);
+                    if (bfs != null && bfs.size() > 1) {
+                        displayPath(g, bfs);
+                    }
+                } else {
+                    displayPath(g, bfs);
                 }
-                displayPath(g, bfs);
                 //System.out.println(bfs);
 
                 break;
