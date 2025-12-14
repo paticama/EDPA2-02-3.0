@@ -275,9 +275,9 @@ public class myGraphBuilder {
         Vertex<Intersection> s = g.getVertex(start.getID());
         Vertex<Intersection> f = g.getVertex(finish.getID());
         
-        
-        double dist1 = calculateDistance(startLon, startLat, avgLon, avgLat);
-        double dist2 = calculateDistance(avgLon, avgLat, finishLon, finishLat);
+        //we assume 100 m in distance for a virtual distance
+        double dist1 = 100.0;
+        double dist2 = 100.0;
         
         
         BikewaySegment virtual1 = createVirtualSegment(VirtualID++, dist1);
@@ -317,14 +317,5 @@ public class myGraphBuilder {
     }
     
     
-    private static double calculateDistance(double lon1, double lat1, double lon2, double lat2) {
-        double R = 6371000; 
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
+    
 }
