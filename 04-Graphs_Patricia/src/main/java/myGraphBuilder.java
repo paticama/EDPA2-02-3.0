@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class myGraphBuilder {
-    static final String PATH = "C:\\Users\\pcama\\Desktop\\Curso25-26\\Primer Cuatrimestre\\EDA\\Assignment05\\assign05\\bikeways.csv"; //Path to .csv
+    static final String PATH = "C:\\Users\\pcama\\IdeaProjects\\EDPA-02-2.0\\04-Graphs_Patricia\\src\\main\\resources\\bikeways.csv"; //Path to .csv
     private static final Scanner input = new Scanner(System.in);
     private static int VirtualID = 4001;
     public  static void main(String[] args) throws IOException {
@@ -59,30 +59,6 @@ public class myGraphBuilder {
 
     }
 
-    public static void processOptions(Graph g){
-        String entrada;
-        boolean finished = false;
-
-        while (!finished) {
-            System.out.println("Please, enter an option and the commands: ");
-            entrada = input.nextLine();
-            char option = entrada.charAt(0);
-            if (option == 'e') {
-                System.out.println("Ending program...");
-                finished = true;
-            } else if (option == 'b' || option == 's' || option == 'd') {
-                String[] split = entrada.trim().split("\\s+");
-                Intersection coord1 = new Intersection(split[1]);
-                Intersection coord2 = new Intersection(split[2]);
-
-                displayMenu(g, option, coord1, coord2, finished);
-            }
-            else{
-                System.out.println("That option is not supported ");
-            }
-        }
-    }
-
     public static int gradoVertice(Graph g, int limit){
         //Searches all nodes of the graph and counts how many are greater than a certain parameter
         int degGreater = 0;
@@ -105,6 +81,47 @@ public class myGraphBuilder {
         return degGreater;
     }
 
+    public static void processOptions(Graph g){
+        String entrada;
+        boolean finished = false;
+
+        while (!finished) {
+            Intersection coord1 = null, coord2 = null;
+            System.out.println("Please, enter an option and the commands: ");
+
+            entrada = input.nextLine();
+
+            if(!entrada.isEmpty()) {
+                char option = entrada.charAt(0);
+                if (option == 'e') {
+                    System.out.println("Ending program...");
+                    finished = true;
+                } else if (option == 'b' || option == 's' || option == 'd') {
+                    String[] split = entrada.trim().split("\\s+");
+                    if(split.length != 3) {
+                        System.out.println("Invalid number of arguments");
+                    }
+                    else {
+                        try {
+                            coord1 = new Intersection(split[1]);
+                            coord2 = new Intersection(split[2]);
+                            manageMenu(g, option, coord1, coord2, finished);
+
+                        } catch (Exception e){
+                            System.out.println("Invalid coordinates");
+                        }
+                    }
+                }
+                else{
+                    System.out.println("That option is not supported ");
+                }
+            } else{
+                System.out.println("Empty input");
+            }
+
+        }
+    }
+
     public static void showMenu(){
         System.out.printf("--OPTIONS--\n");
         System.out.printf("b <lat,long> <lat,long>: Finds shortest path between the given coordinates. \n");
@@ -116,7 +133,7 @@ public class myGraphBuilder {
         System.out.printf("-----------\n");
     }
 
-    public static boolean displayMenu(Graph g, char option, Intersection coord1, Intersection coord2, boolean finished) {
+    public static boolean manageMenu(Graph g, char option, Intersection coord1, Intersection coord2, boolean finished) {
         switch (option) {
             case 'b':
                 List<Vertex> bfs = BFS(g, coord1, coord2);
