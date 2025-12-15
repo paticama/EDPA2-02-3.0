@@ -28,14 +28,14 @@ public class BikewaySegment implements iface, Identity {
         this.geom = data[22];
     }
 
-    // Método para redondear a 5 decimales un valor en formato string
+    // Rounds to 5 decs.
     private String roundTo5(String value) {
         BigDecimal bd = new BigDecimal(value);
         return String.valueOf(bd.setScale(5, RoundingMode.HALF_UP).doubleValue());
     }
 
+    // Parses coords so it can be worked with
     public void  processCoordinates(){
-        //points = geom.replace("MULTILINESTRING ((", "").replace("))", "").split(",");
         points = geom.replace("[", "").replace("]", "").split(" ");
         start = points[0].trim().split(",");
         end = points[points.length - 1].trim().split(",");
@@ -47,12 +47,9 @@ public class BikewaySegment implements iface, Identity {
 
     public boolean checkValid() {
         return (speedLimit >= 30 && segmentLength > 10  &&  yearOfConstruction >= 1990);
-        // Hay un problema en el CSV (por ej. linea 1107) en el que la longitud de segmentos
-        // tiene un formato extraño, y puede hacer que varíe el número de segmentos validos
     }
     public void setVirtual(boolean virtual){
         this.virtual = virtual;
-
     }
 
     @Override

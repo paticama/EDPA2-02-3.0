@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class myGraphBuilder {
-    static final String PATH = "C:\\Users\\pcama\\Downloads\\EDPA2-02-3.0-master\\EDPA2-02-3.0-master\\04-Graphs_Patricia\\src\\main\\resources\\bikeways.csv"; //Path to .csv
+    static final String PATH = "C:\\Users\\pcama\\Downloads\\EDPA2-02-3.0-master\\EDPA2-02-3.0-master\\04-Graphs_Patricia\\src\\main\\resources\\bikeways2.csv"; //Path to .csv
     private static final Scanner input = new Scanner(System.in);
     private static int VirtualID = 4001;
     public  static void main(String[] args) throws IOException {
@@ -64,9 +64,7 @@ public class myGraphBuilder {
         boolean finished = false;
 
         while (!finished) {
-            Intersection coord1 = null, coord2 = null;
             System.out.println("Please, enter an option and the commands: ");
-
             entrada = input.nextLine();
 
             if(!entrada.isEmpty()) {
@@ -81,13 +79,11 @@ public class myGraphBuilder {
                     }
                     else {
                         try {
-                            coord1 = new Intersection(split[1]);
-                            coord2 = new Intersection(split[2]);
+                            Intersection coord1 = new Intersection(split[1]);
+                            Intersection coord2 = new Intersection(split[2]);
                             manageMenu(g, option, coord1, coord2, finished);
-
                         } catch (Exception e){
                             System.out.println("Invalid coordinates");
-                            e.printStackTrace();
                         }
                     }
                 }
@@ -97,10 +93,8 @@ public class myGraphBuilder {
             } else{
                 System.out.println("Empty input");
             }
-
         }
     }
-
 
     public static int gradoVertice(Graph g, int limit){
         //Searches all nodes of the graph and counts how many are greater than a certain parameter
@@ -142,7 +136,7 @@ public class myGraphBuilder {
                 if (bfs == null || bfs.size() == 1) {
                     System.out.println("Path not found, virtual segments will be created");
                     createVirtualSegments(g, coord1, coord2);
-                    //we call again the BFS so we don't have to call the "b" option again
+                    //we call the BFS so we don't have to call the "b" option again
                     bfs = BFS(g, coord1, coord2, false);
                     if (bfs != null && bfs.size() > 1) {
                         displayPath(g, bfs);
@@ -150,13 +144,12 @@ public class myGraphBuilder {
                 } else {
                     displayPath(g, bfs);
                 }
-                //System.out.println(bfs);
-
                 break;
             case 's':
                 List<Vertex> bfsSnow = BFS(g, coord1, coord2, true);
                 if (bfsSnow == null || bfsSnow.size() == 1) {
-                    System.out.println("Path not found, virtual segments will not be created, as it makes no sense");
+                    System.out.println("Path not found, virtual segments will not be created. ");
+                    // As virtual paths are basically blank, we wont create one as it wont have snow removal.
                 } else {
                     displayPath(g, bfsSnow);
                 }
@@ -180,12 +173,10 @@ public class myGraphBuilder {
         Vertex<Intersection> s = gp.getVertex(start.getID());
         Vertex<Intersection> f = gp.getVertex(finish.getID());
         boolean found = false;
-
         if(!gp.exists(s) || !gp.exists(f)){
             System.out.println("ERROR: Nodes not in graph.");
             return null;
         }
-
         Stack<Vertex> st = new Stack<>();
         Map<Vertex, Vertex> parent = new HashMap<>();
         Set<Vertex> visited = new HashSet<>();
@@ -193,23 +184,20 @@ public class myGraphBuilder {
         st.push(s);
         visited.add(s);
 
-        
         while (!st.isEmpty() && !found) {
 
             Vertex current = st.pop();
 
             if (current.equals(f))
                 break;
-
             Iterator<Edge<BikewaySegment>> it = gp.incidentEdges(current);
-
             while (it.hasNext()) {
                 Edge<BikewaySegment> e = it.next();
                 BikewaySegment segment = e.getDecorator().getData();
                 if (segment.speedLimit != 30 || segment.bikewayType.equals("VIRTUAL")) {
+                    //As virtual paths are blank, they have no speed limit, but we added the comparison so it is more readeable
                     continue; // Skip invalid segment 
                 }
-
                 Vertex<Intersection> neighbor = gp.opposite(current, e);
 
                 if (!visited.contains(neighbor)) {
@@ -219,8 +207,6 @@ public class myGraphBuilder {
                 }
             }
         }
-
-        
         // reconstruir camino
         LinkedList<Vertex<Intersection>> path = new LinkedList<>();
 
@@ -234,7 +220,6 @@ public class myGraphBuilder {
 
 
     public static List BFS(Graph gp, Intersection start, Intersection finish, Boolean snow){
-
         Vertex<Intersection> s = gp.getVertex(start.getID());
         Vertex<Intersection> f = gp.getVertex(finish.getID());
         boolean found = false;
@@ -279,9 +264,6 @@ public class myGraphBuilder {
             }
         }
 
-
-        
-
         // reconstruir camino
         //LinkedList<Vertex> path = new LinkedList<>();
         LinkedList<Vertex<Intersection>> path = new LinkedList<>();
@@ -316,11 +298,11 @@ public class myGraphBuilder {
             
             if (edge != null) {
                 BikewaySegment segment = edge.getDecorator().getData();
-                System.out.println("\n Segment " + (i + 1) + ":");
+                System.out.println("\n ---- Segment " + (i + 1) + " ---- ");
                 System.out.println("ID: " + segment.ID);
                 System.out.println("Name: " + segment.routeName);
                 System.out.println("Distance: " + segment.segmentLength + " m");
-                System.out.println(v.getData());
+                System.out.println("Starting intersection: " + u.getData() + " Finishing intersection: " + v.getData());
                 totalDistance += segment.segmentLength;
                 surfaceTypes.add(segment.surfaceType);
             }
@@ -350,21 +332,21 @@ public class myGraphBuilder {
     public static void createVirtualSegments(Graph g, Intersection start, Intersection finish) {
         String[] startCoords = start.getID().split(",");
         String[] finishCoords = finish.getID().split(",");
-        
+
         double startLon = Double.parseDouble(startCoords[0]);
         double startLat = Double.parseDouble(startCoords[1]);
         double finishLon = Double.parseDouble(finishCoords[0]);
         double finishLat = Double.parseDouble(finishCoords[1]);
-        
+
         double avgLon = (startLon + finishLon) / 2.0;
         double avgLat = (startLat + finishLat) / 2.0;
-        
+
         String avgCoords = avgLon + "," + avgLat;
         Intersection midPoint = new Intersection(avgCoords);
         
        Vertex<Intersection> existingMid = g.getVertex(midPoint.getID());
         if (existingMid != null) {
-            System.out.println("Can't create an intersection because it exists already");
+            System.out.println("Cannot create an intersection because it already exists");
             return;
         }
         
@@ -382,13 +364,13 @@ public class myGraphBuilder {
         
         
         Edge<BikewaySegment> e1 = g.insertEdge(s, mid);
-        //Without the {} does not work, don't know why
+        // Without the {} does not work, don't know why  -> {} means its anonymous, as Decorator
+        // cannot be instantiated, this is a way to make it work.
         e1.setDecorator(new Decorator<BikewaySegment>(virtual1) {});
         
         Edge<BikewaySegment> e2 = g.insertEdge(mid, f);
         e2.setDecorator(new Decorator<BikewaySegment>(virtual2) {});
-        
-        
+
         System.out.println("\n=== VIRTUAL SEGMENTS ===");
         System.out.println("Mid Point : " + avgCoords);
         System.out.println("Virtual segment 1: ID " + virtual1.ID + " " + dist1 + " m");
@@ -396,8 +378,7 @@ public class myGraphBuilder {
         System.out.println("Vertex: " + g.getN());
         System.out.println("Edges: " + g.getM());
     }
-    
-    
+
     private static BikewaySegment createVirtualSegment(int id, double length) {
         BikewaySegment virtual = new BikewaySegment();
         virtual.ID = id;
@@ -412,7 +393,5 @@ public class myGraphBuilder {
         virtual.setVirtual(true); // Marcar como virtual
         return virtual;
     }
-    
-    
-    
+
 }

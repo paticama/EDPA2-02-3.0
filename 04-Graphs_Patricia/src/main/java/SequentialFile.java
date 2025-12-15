@@ -6,7 +6,7 @@ import java.util.Scanner;
 /**************************************************************************************************
  * 
  * Class Name: Sequential File
- * Authors name: Patricia Camacho Rivallo, Luis Dueñas Recuero, Rafael Camilo Rubio Quintero
+ * Authors name: PCR, LDR, RCRQ
  * Creation date: 28/09/2025
  * Class version: 1.0
  * Class description: Implements 2. of introductory assignment of Data Structures. This is an 
@@ -17,7 +17,6 @@ import java.util.Scanner;
 */
 
 public class SequentialFile <T extends iface>{
-    //Have to ask about the <T extends iface>
     private Scanner f;
     private String separator;
   
@@ -25,11 +24,10 @@ public class SequentialFile <T extends iface>{
     public SequentialFile(String nameOfFile , String separator) throws IOException {
        
         this.separator =separator;
-        this.f = new Scanner(new File(nameOfFile)) ;//habre un objeto con el nombre del archivo
+        this.f = new Scanner(new File(nameOfFile)) ;
     }
     public void closeFile(){
         f.close();
-
     }
 
     public void read(T t){
@@ -37,7 +35,7 @@ public class SequentialFile <T extends iface>{
         // calls readData, which is found in iface.
 
         String line = f.nextLine();
-        String[] data = line.split(separator, -1); //Añadido un limite para evitar cargarnos información importante
+        String[] data = line.split(separator, -1);
 
         t.readData(data);
     }
@@ -48,7 +46,7 @@ public class SequentialFile <T extends iface>{
     }
 
     public boolean checkEOF(){
-        return f.hasNextLine();  //fin del archivo
+        return f.hasNextLine();
     }
 
 
