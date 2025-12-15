@@ -26,13 +26,13 @@ public class main05NOT {
                 double x2 = Double.parseDouble(split[3]);
                 double y2 = Double.parseDouble(split[4]);
                 double[] coord2 = {x2, y2};
-                manageMenu(option, coord1, coord2, finished);
+                displayMenu(option, coord1, coord2, finished);
             }
         }
 
     }
 
-    public static boolean manageMenu(String option, double[] coord1, double[] coord2, boolean finished) {
+    public static boolean displayMenu(String option, double[] coord1, double[] coord2, boolean finished) {
         switch (option) {
             case "b":
 

@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class myGraphBuilder {
-    static final String PATH = "C:\\Users\\pcama\\IdeaProjects\\EDPA-02-2.0\\04-Graphs_Patricia\\src\\main\\resources\\bikeways.csv"; //Path to .csv
+    static final String PATH = "C:\\Users\\pcama\\Downloads\\EDPA2-02-3.0-master\\EDPA2-02-3.0-master\\04-Graphs_Patricia\\src\\main\\resources\\bikeways.csv"; //Path to .csv
     private static final Scanner input = new Scanner(System.in);
     private static int VirtualID = 4001;
     public  static void main(String[] args) throws IOException {
@@ -59,28 +59,6 @@ public class myGraphBuilder {
 
     }
 
-    public static int gradoVertice(Graph g, int limit){
-        //Searches all nodes of the graph and counts how many are greater than a certain parameter
-        int degGreater = 0;
-
-        Iterator<Vertex> it;
-        it = g.getVertices();
-
-        while(it.hasNext()){
-            Vertex v = it.next();
-            int currentDeg = 0;
-            Iterator<Edge> itCurrent = g.incidentEdges(v);
-            while (itCurrent.hasNext()){
-                itCurrent.next();
-                currentDeg++;
-            }
-            if(currentDeg > limit){
-                degGreater++;
-            }
-        }
-        return degGreater;
-    }
-
     public static void processOptions(Graph g){
         String entrada;
         boolean finished = false;
@@ -109,6 +87,7 @@ public class myGraphBuilder {
 
                         } catch (Exception e){
                             System.out.println("Invalid coordinates");
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -120,6 +99,29 @@ public class myGraphBuilder {
             }
 
         }
+    }
+
+
+    public static int gradoVertice(Graph g, int limit){
+        //Searches all nodes of the graph and counts how many are greater than a certain parameter
+        int degGreater = 0;
+
+        Iterator<Vertex> it;
+        it = g.getVertices();
+
+        while(it.hasNext()){
+            Vertex v = it.next();
+            int currentDeg = 0;
+            Iterator<Edge> itCurrent = g.incidentEdges(v);
+            while (itCurrent.hasNext()){
+                itCurrent.next();
+                currentDeg++;
+            }
+            if(currentDeg > limit){
+                degGreater++;
+            }
+        }
+        return degGreater;
     }
 
     public static void showMenu(){
@@ -136,20 +138,36 @@ public class myGraphBuilder {
     public static boolean manageMenu(Graph g, char option, Intersection coord1, Intersection coord2, boolean finished) {
         switch (option) {
             case 'b':
-                List<Vertex> bfs = BFS(g, coord1, coord2);
-                Iterator<Vertex> itV = bfs.iterator();
-                while (itV.hasNext()){
-                    System.out.println(itV.next());
+                List<Vertex> bfs = BFS(g, coord1, coord2, false);
+                if (bfs == null || bfs.size() == 1) {
+                    System.out.println("Path not found, virtual segments will be created");
+                    createVirtualSegments(g, coord1, coord2);
+                    //we call again the BFS so we don't have to call the "b" option again
+                    bfs = BFS(g, coord1, coord2, false);
+                    if (bfs != null && bfs.size() > 1) {
+                        displayPath(g, bfs);
+                    }
+                } else {
+                    displayPath(g, bfs);
                 }
-                displayPath(g, bfs);
                 //System.out.println(bfs);
 
                 break;
             case 's':
-
+                List<Vertex> bfsSnow = BFS(g, coord1, coord2, true);
+                if (bfsSnow == null || bfsSnow.size() == 1) {
+                    System.out.println("Path not found, virtual segments will not be created, as it makes no sense");
+                } else {
+                    displayPath(g, bfsSnow);
+                }
                 break;
             case 'd':
-
+                List<Vertex> dfs = DFS(g, coord1, coord2);
+                if (dfs == null || dfs.size() == 1) {
+                    System.out.println("Path not found.");
+                } else {
+                    displayPath(g, dfs);
+                }
                 break;
             default:
                 System.out.println("ERROR, option not available");
@@ -158,7 +176,64 @@ public class myGraphBuilder {
         return finished;
     }
 
-    public static List BFS(Graph gp, Intersection start, Intersection finish){
+    public static List DFS(Graph gp, Intersection start, Intersection finish){
+        Vertex<Intersection> s = gp.getVertex(start.getID());
+        Vertex<Intersection> f = gp.getVertex(finish.getID());
+        boolean found = false;
+
+        if(!gp.exists(s) || !gp.exists(f)){
+            System.out.println("ERROR: Nodes not in graph.");
+            return null;
+        }
+
+        Stack<Vertex> st = new Stack<>();
+        Map<Vertex, Vertex> parent = new HashMap<>();
+        Set<Vertex> visited = new HashSet<>();
+
+        st.push(s);
+        visited.add(s);
+
+        
+        while (!st.isEmpty() && !found) {
+
+            Vertex current = st.pop();
+
+            if (current.equals(f))
+                break;
+
+            Iterator<Edge<BikewaySegment>> it = gp.incidentEdges(current);
+
+            while (it.hasNext()) {
+                Edge<BikewaySegment> e = it.next();
+                BikewaySegment segment = e.getDecorator().getData();
+                if (segment.speedLimit != 30 || segment.bikewayType.equals("VIRTUAL")) {
+                    continue; // Skip invalid segment 
+                }
+
+                Vertex<Intersection> neighbor = gp.opposite(current, e);
+
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    parent.put(neighbor, current);
+                    st.push(neighbor);
+                }
+            }
+        }
+
+        
+        // reconstruir camino
+        LinkedList<Vertex<Intersection>> path = new LinkedList<>();
+
+        Vertex p = f;
+        while (p != null) {
+            path.addFirst(p);
+            p = parent.get(p);
+        }
+        return path;
+    }
+
+
+    public static List BFS(Graph gp, Intersection start, Intersection finish, Boolean snow){
 
         Vertex<Intersection> s = gp.getVertex(start.getID());
         Vertex<Intersection> f = gp.getVertex(finish.getID());
@@ -189,6 +264,11 @@ public class myGraphBuilder {
             while (it.hasNext()) {
                 //Vertex neighbor = it.next();
                 Edge<BikewaySegment> e = it.next();
+                BikewaySegment segment = e.getDecorator().getData();
+                if (snow && (!segment.bikewayType.equals("Protected Bike Lanes") || !segment.snowRemoval)) {
+                    continue; // Skip invalid segment 
+                }
+
                 Vertex<Intersection> neighbor = gp.opposite(current, e);
 
                 if (!visited.contains(neighbor)) {
@@ -282,11 +362,11 @@ public class myGraphBuilder {
         String avgCoords = avgLon + "," + avgLat;
         Intersection midPoint = new Intersection(avgCoords);
         
-        if (g.exists(g.getVertex(midPoint.getID()))) {
-            System.out.println("Can't create an intersection because it exist already");
+       Vertex<Intersection> existingMid = g.getVertex(midPoint.getID());
+        if (existingMid != null) {
+            System.out.println("Can't create an intersection because it exists already");
             return;
         }
-        
         
         Vertex<Intersection> mid = g.insertVertex(midPoint);
         Vertex<Intersection> s = g.getVertex(start.getID());
@@ -329,7 +409,7 @@ public class myGraphBuilder {
         virtual.snowRemoval = false;
         virtual.segmentLength = length;
         virtual.yearOfConstruction = 0;
-        virtual.setVirtual(true); // NUEVO: Marcar como virtual
+        virtual.setVirtual(true); // Marcar como virtual
         return virtual;
     }
     
