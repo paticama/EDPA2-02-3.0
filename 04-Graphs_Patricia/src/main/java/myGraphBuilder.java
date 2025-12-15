@@ -2,10 +2,32 @@ import graphsDS_ESI_UCLM_v2.*;
 import java.io.IOException;
 import java.util.*;
 
+/**************************************************************************************************
+ * 
+ * Class Name: myGraphBuilder
+ * Author/s name: PC, RCR, LD - Group 02
+ * Release/Creation date: 13/12/2025
+ * Class description: Main class for assignment 04. Builds a graph from bikeway data
+ * 
+***************************************************************************************************
+*/
+
 public class myGraphBuilder {
     static final String PATH = "C:\\Users\\pcama\\Downloads\\EDPA2-02-3.0-master\\EDPA2-02-3.0-master\\04-Graphs_Patricia\\src\\main\\resources\\bikeways2.csv"; //Path to .csv
     private static final Scanner input = new Scanner(System.in);
     private static int VirtualID = 4001;
+    /**************************************************************************************************
+     * 
+     * Method Name: main
+     * Name of the original author: PC, RCR, LD
+     * Description of the Method: Entry point of the program. Reads bikeway data from CSV file,
+     * builds graph, displays statistics and displays the menu
+     * Calling arguments: String[] args 
+     * Return value: void
+     * Required files: bikeways2.csv 
+     * 
+    ***************************************************************************************************
+    */
     public  static void main(String[] args) throws IOException {
         try {
             SequentialFile<BikewaySegment> file = new SequentialFile<>(PATH, ";");
@@ -33,7 +55,7 @@ public class myGraphBuilder {
             System.out.println("Number of segments: " + g.getM());
             System.out.println("Selected " + g.getM() + " segments out of " + docLines + " candidates.");
             System.out.println("Average length of " + totalDist/g.getM() + " meters.");
-            System.out.println("Number of intersections with degree greater than 2: " + gradoVertice(g, 2) ); //2 is given by the requirements.
+            System.out.println("Number of intersections with degree greater than 2: " + degreeVertex(g, 2) ); //2 is given by the requirements.
 
             showMenu();
             processOptions(g);
@@ -43,7 +65,18 @@ public class myGraphBuilder {
         }
 
     }
-
+    /**************************************************************************************************
+     * 
+     * Method Name: addToGraph
+     * Name of the original author: PC
+     * Description of the Method: Adds a bikeway segment to the graph by creating vertices for start
+     * and end intersections, creating an edge between them with the segment as decorator
+     * Calling arguments: BikewaySegment segment, Graph g 
+     * Return value: void
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     public static void addToGraph(BikewaySegment segment, Graph g){
         Edge<BikewaySegment> bikeSegment;
         Vertex<Intersection> startPoint, endPoint;
@@ -58,7 +91,17 @@ public class myGraphBuilder {
         bikeSegment.setDecorator(new Decorator<BikewaySegment>(segment) {}); //El {} implica que es anónimo
 
     }
-
+    /**************************************************************************************************
+     * 
+     * Method Name: processOptions
+     * Name of the original author: RCR
+     * Description of the Method: Main loop that processes user menu input, handling the options
+     * Calling arguments: Graph g 
+     * Return value: void
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     public static void processOptions(Graph g){
         String entrada;
         boolean finished = false;
@@ -95,9 +138,19 @@ public class myGraphBuilder {
             }
         }
     }
-
-    public static int gradoVertice(Graph g, int limit){
-        //Searches all nodes of the graph and counts how many are greater than a certain parameter
+    /**************************************************************************************************
+     * 
+     * Method Name: degreeVertex
+     * Name of the original author: LD
+     * Description of the Method: Searches all nodes of the graph and counts how many are greater than a certain parameter
+     * Calling arguments: Graph g, int limit 
+     * Return value: int 
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
+    public static int degreeVertex(Graph g, int limit){
+        
         int degGreater = 0;
 
         Iterator<Vertex> it;
@@ -117,7 +170,17 @@ public class myGraphBuilder {
         }
         return degGreater;
     }
-
+    /**************************************************************************************************
+     * 
+     * Method Name: showMenu
+     * Name of the original author: RCR
+     * Description of the Method: Displays the interactive menu with available path-finding options
+     * Calling arguments: None
+     * Return value: void
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     public static void showMenu(){
         System.out.printf("--OPTIONS--\n");
         System.out.printf("b <lat,long> <lat,long>: Finds shortest path between the given coordinates. \n");
@@ -128,7 +191,18 @@ public class myGraphBuilder {
         System.out.printf("e: Exits the program. \n");
         System.out.printf("-----------\n");
     }
-
+    /**************************************************************************************************
+     * 
+     * Method Name: manageMenu
+     * Name of the original author: PC
+     * Description of the Method: Dispatches menu commands to appropriate path-finding algorithms
+     * (BFS standard, BFS with snow removal, or DFS). Creates virtual segments if path not found
+     * Calling arguments: Graph g, char option, Intersection coord1, Intersection coord2, boolean finished 
+     * Return value: boolean 
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     public static boolean manageMenu(Graph g, char option, Intersection coord1, Intersection coord2, boolean finished) {
         switch (option) {
             case 'b':
@@ -168,7 +242,17 @@ public class myGraphBuilder {
         }
         return finished;
     }
-
+    /**************************************************************************************************
+     * 
+     * Method Name: DFS
+     * Name of the original author: PC, RCR, LD
+     * Description of the Method: Performs Depth-First Search to find a path between two intersections.
+     * Calling arguments: Graph gp, Intersection start, Intersection finish 
+     * Return value: List<Vertex>, null
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     public static List DFS(Graph gp, Intersection start, Intersection finish){
         Vertex<Intersection> s = gp.getVertex(start.getID());
         Vertex<Intersection> f = gp.getVertex(finish.getID());
@@ -207,7 +291,7 @@ public class myGraphBuilder {
                 }
             }
         }
-        // reconstruir camino
+        // Path reconstruction 
         LinkedList<Vertex<Intersection>> path = new LinkedList<>();
 
         Vertex p = f;
@@ -218,7 +302,18 @@ public class myGraphBuilder {
         return path;
     }
 
-
+    /**************************************************************************************************
+     * 
+     * Method Name: BFS
+     * Name of the original author: PC, RCR, LD
+     * Description of the Method: Performs Breadth-First Search to find shortest path between two
+     * intersections. Can optionally filter for protected bike lanes with snow removal
+     * Calling arguments: Graph gp, Intersection start, Intersection finish, Boolean snow 
+     * Return value: List<Vertex>, null
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     public static List BFS(Graph gp, Intersection start, Intersection finish, Boolean snow){
         Vertex<Intersection> s = gp.getVertex(start.getID());
         Vertex<Intersection> f = gp.getVertex(finish.getID());
@@ -264,7 +359,7 @@ public class myGraphBuilder {
             }
         }
 
-        // reconstruir camino
+        
         //LinkedList<Vertex> path = new LinkedList<>();
         LinkedList<Vertex<Intersection>> path = new LinkedList<>();
 
@@ -276,6 +371,18 @@ public class myGraphBuilder {
 
         return path;
     }
+    /**************************************************************************************************
+     * 
+     * Method Name: displayPath
+     * Name of the original author: RCR
+     * Description of the Method: Displays detailed information about a found path including all
+     * segments, distances, and surface types
+     * Calling arguments: Graph g, List<Vertex> path
+     * Return value: void
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     public static void displayPath(Graph g, List<Vertex> path) {
         if (path == null || path.isEmpty()) {
             System.out.println("Path not found");
@@ -316,7 +423,17 @@ public class myGraphBuilder {
             System.out.println(surface);
         }
     }
-
+    /**************************************************************************************************
+     * 
+     * Method Name: findEdgeBetween
+     * Name of the original author: PC
+     * Description of the Method: Finds the edge connecting two vertices in the graph
+     * Calling arguments: Graph g, Vertex u, Vertex v 
+     * Return value: Edge<BikewaySegment>, null
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     private static Edge<BikewaySegment> findEdgeBetween(Graph g, Vertex u, Vertex v) {
         Iterator<Edge<BikewaySegment>> it = g.incidentEdges(u);
         while (it.hasNext()) {
@@ -328,7 +445,17 @@ public class myGraphBuilder {
         }
         return null;
     }
-
+    /**************************************************************************************************
+     * 
+     * Method Name: createVirtualSegments
+     * Name of the original author: RCR
+     * Description of the Method: Creates virtual segments to connect start and finish points through a midpoint when no direct path exists
+     * Calling arguments: Graph g, Intersection start, Intersection finish 
+     * Return value: void
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     public static void createVirtualSegments(Graph g, Intersection start, Intersection finish) {
         String[] startCoords = start.getID().split(",");
         String[] finishCoords = finish.getID().split(",");
@@ -378,7 +505,17 @@ public class myGraphBuilder {
         System.out.println("Vertex: " + g.getN());
         System.out.println("Edges: " + g.getM());
     }
-
+    /**************************************************************************************************
+     * 
+     * Method Name: createVirtualSegment
+     * Name of the original author: LD
+     * Description of the Method: Creates a BikewaySegment object with virtual properties and specified length
+     * Calling arguments: int id, double length 
+     * Return value: BikewaySegment 
+     * Required files: None
+     * 
+    ***************************************************************************************************
+    */
     private static BikewaySegment createVirtualSegment(int id, double length) {
         BikewaySegment virtual = new BikewaySegment();
         virtual.ID = id;

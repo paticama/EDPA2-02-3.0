@@ -1,6 +1,14 @@
 import graphsDS_ESI_UCLM_v2.Identity;
 
-//Necesita implementar Identity para que el Grafo pueda reconocer cada ID como la identidad del nodo
+/**************************************************************************************************
+ * 
+ * Class Name: Intersection
+ * Author/s name: PC, RCR, LD - Group 02
+ * Release/Creation date: 12/12/2025
+ * Class description: Represents an intersection in the bikeway network identified by coordinates.
+ * 
+***************************************************************************************************
+*/
 public class Intersection implements Identity {
     String coord;
 
